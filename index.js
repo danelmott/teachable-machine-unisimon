@@ -1,22 +1,22 @@
-const URL_IMAGEN = "https://teachablemachine.withgoogle.com/models/Cq3bknhWc/";
+const URL_RESIDUOS = "https://teachablemachine.withgoogle.com/models/Cq3bknhWc/";
 const URL_AUDIO = "https://teachablemachine.withgoogle.com/models/YHWm44_WI/";
-const URL_POSE = "https://teachablemachine.withgoogle.com/models/0ZFkP_qyl/";
+const URL_POSES = "https://teachablemachine.withgoogle.com/models/0ZFkP_qyl/";
 
+//selector de secciones 
 const panel = nombre => document.querySelector(`[data-panel="${nombre}"]`);
 
-// Same result list for the three models: sorted, percentage and bar
 function pintar(lista, preds) {
     preds.sort((a, b) => b.probability - a.probability);
     lista.innerHTML = preds.map(p => {
       const pct = (p.probability * 100).toFixed(0);
-      return `<li>
-        <div class="fila"><b>${p.className}</b><span>${pct}%</span></div>
-        <div class="barra"><i style="width:${pct}%"></i></div>
+      return `<li class="group grid gap-1">
+        <div class="flex justify-between text-[.95rem] max-[380px]:text-sm"><b class="font-semibold">${p.className}</b><span class="text-muted tabular-nums">${pct}%</span></div>
+        <div class="h-1 overflow-hidden rounded-sm bg-line"><i class="block h-full bg-muted transition-[width] duration-300 group-first:bg-accent" style="width:${pct}%"></i></div>
       </li>`;
     }).join("");
 }
 
-// Drag & drop / click upload zone shared by the image and pose panels
+
 function configurarZona(seccion, alCargar) {
     const zona = seccion.querySelector(".zona");
     const archivo = zona.querySelector("input");
@@ -44,60 +44,65 @@ function configurarZona(seccion, alCargar) {
     zona.addEventListener("drop", e => mostrar(e.dataTransfer.files[0]));
 }
 
-/* ---- Imagen ---- */
-const imagen = panel("imagen");
-const estadoImagen = imagen.querySelector(".estado");
-let modeloImagen;
 
-async function cargarImagen() {
+//residuos
+const residuos = panel("residuos");
+const estadoResiduos = residuos.querySelector(".estado");
+let modeloResiduos;
+
+//funcion para cargar resuidos al modelo 
+async function cargarResiduos() {
     try {
-      modeloImagen = await tmImage.load(URL_IMAGEN + "model.json", URL_IMAGEN + "metadata.json");
-      estadoImagen.textContent = "Listo. Sube una imagen.";
+      modeloResiduos = await tmImage.load(URL_RESIDUOS + "model.json", URL_RESIDUOS + "metadata.json");
+      estadoResiduos.textContent = "Listo. Sube una foto del residuo.";
     } catch (e) {
-      estadoImagen.textContent = "No se pudo cargar el modelo. Revisa la URL.";
+      estadoResiduos.textContent = "No se pudo cargar el modelo. Revisa la URL.";
     }
 }
 
-configurarZona(imagen, async vista => {
-    if (!modeloImagen) return;
-    estadoImagen.textContent = "Analizando…";
-    pintar(imagen.querySelector(".resultados"), await modeloImagen.predict(vista));
-    estadoImagen.textContent = "";
+//ver resultados del modelo
+configurarZona(residuos, async vista => {
+    if (!modeloResiduos) return;
+    estadoResiduos.textContent = "Analizando…";
+    pintar(residuos.querySelector(".resultados"), await modeloResiduos.predict(vista));
+    estadoResiduos.textContent = "";
 });
 
-/* ---- Pose ---- */
-const pose = panel("pose");
-const estadoPose = pose.querySelector(".estado");
-let modeloPose;
 
-async function cargarPose() {
-    estadoPose.textContent = "Cargando modelo…";
+
+/* ---- Poses ---- */
+const poses = panel("poses");
+const estadoPoses = poses.querySelector(".estado");
+let modeloPoses;
+
+async function cargarPoses() {
+    estadoPoses.textContent = "Cargando modelo…";
     try {
-      modeloPose = await tmPose.load(URL_POSE + "model.json", URL_POSE + "metadata.json");
-      estadoPose.textContent = "Listo. Sube una foto de una persona.";
+      modeloPoses = await tmPose.load(URL_POSES + "model.json", URL_POSES + "metadata.json");
+      estadoPoses.textContent = "Listo. Sube una foto de una persona.";
     } catch (e) {
-      estadoPose.textContent = "No se pudo cargar el modelo. Revisa la URL.";
+      estadoPoses.textContent = "No se pudo cargar el modelo. Revisa la URL.";
     }
 }
 
-configurarZona(pose, async vista => {
-    if (!modeloPose) return;
-    estadoPose.textContent = "Analizando…";
+configurarZona(poses, async vista => {
+    if (!modeloPoses) return;
+    estadoPoses.textContent = "Analizando…";
     // Draw at natural size so PoseNet sees the real proportions, not the cropped preview
     const lienzo = document.createElement("canvas");
     lienzo.width = vista.naturalWidth;
     lienzo.height = vista.naturalHeight;
     lienzo.getContext("2d").drawImage(vista, 0, 0);
 
-    const { pose: esqueleto, posenetOutput } = await modeloPose.estimatePose(lienzo);
-    const lista = pose.querySelector(".resultados");
+    const { pose: esqueleto, posenetOutput } = await modeloPoses.estimatePose(lienzo);
+    const lista = poses.querySelector(".resultados");
     if (!esqueleto || esqueleto.score < 0.2) {
       lista.innerHTML = "";
-      estadoPose.textContent = "No se detectó una persona en la imagen.";
+      estadoPoses.textContent = "No se detectó una persona en la imagen.";
       return;
     }
-    pintar(lista, await modeloPose.predict(posenetOutput));
-    estadoPose.textContent = "";
+    pintar(lista, await modeloPoses.predict(posenetOutput));
+    estadoPoses.textContent = "";
 });
 
 /* ---- Audio ---- */
@@ -164,7 +169,7 @@ botonAudio.addEventListener("click", () => reconocedor.isListening() ? detener()
 
 /* ---- Pestañas ---- */
 // Each model is loaded the first time its tab is opened
-const cargas = { imagen: cargarImagen, audio: cargarAudio, pose: cargarPose };
+const cargas = { residuos: cargarResiduos, audio: cargarAudio, poses: cargarPoses };
 const cargados = new Set();
 
 function abrir(nombre) {
@@ -182,4 +187,4 @@ function abrir(nombre) {
 document.querySelectorAll("[data-tab]").forEach(b =>
   b.addEventListener("click", () => abrir(b.dataset.tab)));
 
-abrir("imagen");
+abrir("residuos");

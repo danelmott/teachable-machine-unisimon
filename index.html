@@ -4,46 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Clasificador Teachable Machine</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-ink: #1b1f27;
+            --color-muted: #6b7280;
+            --color-line: #d9dde3;
+            --color-accent: #2f4bd8;
+            --color-suave: #f5f7ff;
+        }
+    </style>
 </head>
-<body>
-    <main class="clasificador">
-        <nav class="tabs" role="tablist">
-            <button role="tab" data-tab="imagen" aria-selected="true">Imagen</button>
+<body class="min-h-dvh bg-white px-4 pt-6 pb-10 text-ink md:grid md:place-items-center md:px-6 md:py-10">
+    <main class="mx-auto w-full max-w-[420px] md:max-w-[860px]">
+        <nav role="tablist" class="mb-4 flex gap-1 border-b border-line md:mx-auto md:mb-6 md:max-w-[420px]
+            *:-mb-px *:min-h-11 *:flex-1 *:cursor-pointer *:border-b-2 *:border-transparent *:text-muted
+            *:hover:text-ink *:aria-selected:border-accent *:aria-selected:font-semibold *:aria-selected:text-accent">
+            <button role="tab" data-tab="residuos" aria-selected="true">Residuos</button>
             <button role="tab" data-tab="audio" aria-selected="false">Audio</button>
-            <button role="tab" data-tab="pose" aria-selected="false">Pose</button>
+            <button role="tab" data-tab="poses" aria-selected="false">Poses</button>
         </nav>
 
-        <!--Section for uploading images to the classification model-->
-        <section data-panel="imagen">
-            <label class="zona">
-                <input type="file" accept="image/*">
-                <img alt="Imagen seleccionada">
-                <span><span class="raton">Arrastra una imagen aquí o haz clic para elegirla</span><span class="tactil">Toca para tomar o elegir una imagen</span></span>
+        <section data-panel="residuos" class="md:grid md:grid-cols-2 md:grid-rows-[auto_1fr] md:items-start md:gap-x-8">
+            <label class="zona group relative grid aspect-[4/3] cursor-pointer place-items-center overflow-hidden rounded-[14px] border-[1.5px] border-dashed border-line text-center text-muted transition-colors focus-within:outline-2 focus-within:outline-offset-3 focus-within:outline-accent hover:border-accent hover:bg-suave max-[380px]:aspect-square md:row-span-2 [&.activa]:border-accent [&.activa]:bg-suave">
+                <input type="file" accept="image/*" class="absolute inset-0 cursor-pointer opacity-0">
+                <img alt="Imagen seleccionada" class="absolute inset-0 hidden size-full bg-suave object-contain group-[.con-imagen]:block">
+                <span class="px-4 group-[.con-imagen]:hidden"><span class="pointer-coarse:hidden">Arrastra una foto del residuo aquí o haz clic para elegirla</span><span class="hidden pointer-coarse:inline">Toca para tomar o elegir una foto del residuo</span></span>
             </label>
-            <p class="estado">Cargando modelo…</p>
-            <ul class="resultados"></ul>
+            <p class="estado mt-4 min-h-[1.4em] text-sm text-muted md:mt-0">Cargando modelo…</p>
+            <ul class="resultados mt-5 grid gap-3 md:mt-2"></ul>
         </section>
 
-        <!--Section for listening to the microphone with the audio model-->
-        <section data-panel="audio" hidden>
-            <div class="zona zona-audio">
-                <button type="button" class="escuchar" disabled>Escuchar</button>
+        <section data-panel="audio" hidden class="md:grid md:grid-cols-2 md:grid-rows-[auto_1fr] md:items-start md:gap-x-8">
+            <div class="zona grid aspect-[4/3] content-center place-items-center gap-3 rounded-[14px] border-[1.5px] border-dashed border-line p-4 text-center text-muted transition-colors max-[380px]:aspect-square md:row-span-2 [&.activa]:border-accent [&.activa]:bg-suave">
+                <button type="button" class="escuchar cursor-pointer rounded-full border-[1.5px] border-accent bg-white px-7 py-2.5 font-semibold text-accent enabled:hover:bg-accent enabled:hover:text-white disabled:cursor-wait disabled:border-line disabled:text-muted" disabled>Escuchar</button>
                 <span>Usa el micrófono para clasificar sonidos en vivo</span>
             </div>
-            <p class="estado"></p>
-            <ul class="resultados"></ul>
+            <p class="estado mt-4 min-h-[1.4em] text-sm text-muted md:mt-0"></p>
+            <ul class="resultados mt-5 grid gap-3 md:mt-2"></ul>
         </section>
 
-        <!--Section for uploading images to the pose model-->
-        <section data-panel="pose" hidden>
-            <label class="zona">
-                <input type="file" accept="image/*">
-                <img alt="Imagen seleccionada">
-                <span><span class="raton">Arrastra una foto de una persona aquí o haz clic para elegirla</span><span class="tactil">Toca para tomar o elegir una foto de una persona</span></span>
+        <section data-panel="poses" hidden class="md:grid md:grid-cols-2 md:grid-rows-[auto_1fr] md:items-start md:gap-x-8">
+            <label class="zona group relative grid aspect-[4/3] cursor-pointer place-items-center overflow-hidden rounded-[14px] border-[1.5px] border-dashed border-line text-center text-muted transition-colors focus-within:outline-2 focus-within:outline-offset-3 focus-within:outline-accent hover:border-accent hover:bg-suave max-[380px]:aspect-square md:row-span-2 [&.activa]:border-accent [&.activa]:bg-suave">
+                <input type="file" accept="image/*" class="absolute inset-0 cursor-pointer opacity-0">
+                <img alt="Imagen seleccionada" class="absolute inset-0 hidden size-full bg-suave object-contain group-[.con-imagen]:block">
+                <span class="px-4 group-[.con-imagen]:hidden"><span class="pointer-coarse:hidden">Arrastra una foto de una persona aquí o haz clic para elegirla</span><span class="hidden pointer-coarse:inline">Toca para tomar o elegir una foto de una persona</span></span>
             </label>
-            <p class="estado"></p>
-            <ul class="resultados"></ul>
+            <p class="estado mt-4 min-h-[1.4em] text-sm text-muted md:mt-0"></p>
+            <ul class="resultados mt-5 grid gap-3 md:mt-2"></ul>
         </section>
     </main>
 </body>
